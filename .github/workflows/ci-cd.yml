@@ -1,0 +1,51 @@
+name: Deploy Frontend (HERCA-FE)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    name: Build & Deploy to VPS
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install deps
+      run: npm ci
+
+    - name: Build Vite project
+      run: npm run build
+
+    - name: Copy build via SSH
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        source: "dist/*"
+        target: "/var/www/herca-fe"
+
+    - name: Restart frontend container via SSH
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          docker container stop herca-fe || true
+          docker container rm herca-fe || true
+          docker run -d \
+            --name herca-fe \
+            -p ${{ secrets.PORT }}:80 \
+            -v /var/www/herca-fe:/usr/share/nginx/html \
+            nginx:stable-alpine
