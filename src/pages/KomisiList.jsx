@@ -3,28 +3,63 @@ import axios from "axios";
 
 function KomisiList() {
   const [komisiData, setKomisiData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     axios
-      .get("/api/komisi")
-      .then((res) => setKomisiData(res.data))
+      .get("http://localhost:8000/api/komisi")
+      .then((res) => {
+        setKomisiData(res.data);
+        setFilteredData(res.data);
+      })
       .catch((err) => console.error("Gagal ambil data komisi:", err));
   }, []);
+
+  useEffect(() => {
+    const keyword = searchTerm.toLowerCase();
+    const filtered = komisiData.filter((item) =>
+      Object.values(item).some((val) =>
+        String(val).toLowerCase().includes(keyword)
+      )
+    );
+    setFilteredData(filtered);
+  }, [searchTerm, komisiData]);
 
   return (
     <div className="container mt-5">
       <div className="card shadow border-0">
-        <div className="card-body">
-          <h3 className="card-title mb-4">Daftar Komisi Marketing</h3>
+        <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+          <div>
+            <i className="bi bi-bar-chart-line-fill me-2"></i>
+            <strong>Daftar Komisi Marketing</strong>
+          </div>
+          <span className="badge bg-light text-primary">
+            Total: {filteredData.length} Data
+          </span>
+        </div>
 
-          {komisiData.length === 0 ? (
-            <p className="text-muted fst-italic">Belum ada data komisi.</p>
+        <div className="card-body">
+          <div className="mb-3">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Cari berdasarkan marketing, bulan, angka, dsb..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          {filteredData.length === 0 ? (
+            <p className="text-muted fst-italic">
+              Tidak ditemukan data yang cocok.
+            </p>
           ) : (
             <div className="table-responsive">
-              <table className="table table-bordered table-hover">
-                <thead className="table-light">
-                  <tr>
-                    <th>No</th>
+              <table className="table table-striped table-hover table-bordered align-middle">
+                <thead className="table-primary">
+                  <tr className="text-center">
+                    <th style={{ width: "5%" }}>No</th>
                     <th>Marketing</th>
                     <th>Bulan</th>
                     <th>Omzet</th>
@@ -33,14 +68,17 @@ function KomisiList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {komisiData.map((item, index) => (
+                  {filteredData.map((item, index) => (
                     <tr key={index}>
-                      <td>{index + 1}</td> {/* Nomor urut */}
+                      <td className="text-center">{index + 1}</td>
                       <td>{item.marketing}</td>
                       <td>{item.bulan}</td>
                       <td>Rp {parseInt(item.omzet).toLocaleString("id-ID")}</td>
-                      <td>{item.komisi_persen}</td>
-                      <td>Rp {parseInt(item.komisi_nominal).toLocaleString("id-ID")}</td>
+                      <td className="text-center">{item.komisi_persen}</td>
+                      <td>
+                        Rp{" "}
+                        {parseInt(item.komisi_nominal).toLocaleString("id-ID")}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

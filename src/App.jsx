@@ -1,7 +1,7 @@
 import { Routes, Route, Link } from "react-router-dom";
 import KomisiList from "./pages/KomisiList";
-import PembayaranDetail from "./pages/PembayaranDetail";
 import PenjualanList from "./pages/PenjualanList";
+import PembayaranDetail from "./pages/PembayaranDetail";
 
 function App() {
   return (
@@ -12,14 +12,24 @@ function App() {
           <Link className="navbar-brand" to="/">
             Sistem Komisi
           </Link>
-          <div className="collapse navbar-collapse">
+          <button
+            className="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+          >
+            <span className="navbar-toggler-icon"></span>
+          </button>
+          <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav ms-auto">
               <li className="nav-item">
                 <Link className="nav-link" to="/">
                   Komisi
                 </Link>
+              </li>
+              <li className="nav-item">
                 <Link className="nav-link" to="/penjualan">
-                  List Penjualan
+                  Penjualan
                 </Link>
               </li>
             </ul>
@@ -28,7 +38,7 @@ function App() {
       </nav>
 
       {/* Konten Utama */}
-      <main className="bg-light min-vh-100">
+      <main className="container my-4">
         <Routes>
           <Route path="/" element={<KomisiList />} />
           <Route path="/penjualan" element={<PenjualanList />} />
